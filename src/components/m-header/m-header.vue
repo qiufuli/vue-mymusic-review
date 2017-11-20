@@ -9,6 +9,7 @@
 </script>
 
 <style scoped lang="stylus" rel="stylesheet/stylus">
+	/*用波浪线引入表示波浪线后面的是一个模块*/
 	@import "~common/stylus/variable"
 	@import "~common/stylus/mixin"
 	

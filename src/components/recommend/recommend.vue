@@ -1,9 +1,53 @@
 <template>
-
+<div class="recommend">
+	<div class="recommend-content">
+		<div class="slider-wrapper">
+			<slider>
+				<div v-for="item in recommends">
+					<a :href="item.linkUrl">
+						<img :src="item.picUrl" alt="" />
+					</a>
+				</div>
+			</slider>
+		</div>
+		<div class="recommend-list">
+			<h1 class="list-title">热门歌单推荐</h1>
+			<ul></ul>
+		</div>
+	</div>
+</div>
 </template>
 
 <script type="text/ecmascript-6">
-	
+	import Slider from '@/base/slider/slider'
+	import {getRecommend} from '@/api/recommend'
+	import {ERR_OK} from '@/api/config'
+	export default{
+		components:{
+			Slider
+		},
+			data(){
+			return {
+				recommends:[]
+			}
+		},
+		created(){
+			this._getRecommend()
+		},
+		methods:{
+			_getRecommend(){
+				// 重要 重要 重要
+				// jsonp先封装好参数形势 然后用recommend把值和地址传过去 在这里实现最后的获取
+				//因为是promise过来的 所以用then的话就能获取数据了
+				getRecommend().then((res)=>{
+					if(res.code === ERR_OK){
+						console.log(res.data.slider)
+						this.recommends = res.data.slider;
+					}
+				})
+			}
+		}
+	}
 </script>
 
 <style scoped lang="stylus" rel="stylesheet/stylus">
