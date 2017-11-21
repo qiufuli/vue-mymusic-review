@@ -1,4 +1,5 @@
 export function hasClass(el, className) {
+	// 首先一个正则 看时候有class
   let reg = new RegExp('(^|\\s)' + className + '(\\s|$)')
   return reg.test(el.className)
 }
@@ -7,11 +8,12 @@ export function addClass(el, className) {
   if (hasClass(el, className)) {
     return
   }
-
+  //先把class分成 数组 然后把新的class加进去 然后再别成字符串 要有空格的
   let newClass = el.className.split(' ')
   newClass.push(className)
   el.className = newClass.join(' ')
 }
+
 // listview 里用了
 export function getData(el,name,val){
 	const prefix = 'data-';

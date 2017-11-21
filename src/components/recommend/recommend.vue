@@ -1,7 +1,9 @@
 <template>
 <div class="recommend">
 	<div class="recommend-content">
-		<div class="slider-wrapper">
+		<!--加这个if判断是为了保证dom已经加载完了 否则动态设置轮播元素宽度的时候设置不上 获取不到元素  重要-->
+		<!--if成功的时候才会渲染下面的slider组件 这样就确保有元素在 666-->
+		<div v-if="recommends.length" class="slider-wrapper">
 			<slider>
 				<div v-for="item in recommends">
 					<a :href="item.linkUrl">
@@ -100,3 +102,5 @@
         top: 50%
         transform: translateY(-50%)
 </style>
+
+
