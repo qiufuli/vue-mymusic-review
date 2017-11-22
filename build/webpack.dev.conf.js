@@ -7,6 +7,14 @@ const baseWebpackConfig = require('./webpack.base.conf')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const FriendlyErrorsPlugin = require('friendly-errors-webpack-plugin')
 const portfinder = require('portfinder')
+//自己写的部分
+const express = require('express')
+const app = express()
+var apiRoutes = express.Router()
+var axios = require('axios')
+app.use('/api', apiRoutes)
+
+
 
 const devWebpackConfig = merge(baseWebpackConfig, {
   module: {
@@ -17,6 +25,25 @@ const devWebpackConfig = merge(baseWebpackConfig, {
   
   // these devServer options should be customized in /config/index.js
   devServer: {
+  	before(app){
+  		app.get('/api/getDiscList', function (req, res) {
+
+  var url = 'https://c.y.qq.com/splcloud/fcgi-bin/fcg_get_diss_by_tag.fcg'
+  axios.get(url, {
+    headers: {
+      referer: 'https://c.y.qq.com/',
+      host: 'c.y.qq.com'
+    },
+    params: req.query
+  }).then((response) => {
+    res.json(response.data)
+        console.log(res)
+  console.log(req)
+  }).catch((e) => {
+    console.log(e)
+  })
+})
+  	},
     clientLogLevel: 'warning',
     historyApiFallback: true,
     hot: true,

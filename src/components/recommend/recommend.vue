@@ -3,11 +3,11 @@
 	<div class="recommend-content">
 		<!--加这个if判断是为了保证dom已经加载完了 否则动态设置轮播元素宽度的时候设置不上 获取不到元素  重要-->
 		<!--if成功的时候才会渲染下面的slider组件 这样就确保有元素在 666-->
-		<div v-if="recommends.length" class="slider-wrapper">
+		<div v-if="recommends.length" class="slider-wrapper" ref="sliderWrapper">
 			<slider>
 				<div v-for="item in recommends">
 					<a :href="item.linkUrl">
-						<img :src="item.picUrl" alt="" />
+						<img class="needsclick" :src="item.picUrl" alt="" />
 					</a>
 				</div>
 			</slider>
@@ -22,19 +22,20 @@
 
 <script type="text/ecmascript-6">
 	import Slider from '@/base/slider/slider'
-	import {getRecommend} from '@/api/recommend'
+	import {getRecommend,getDiscList} from '@/api/recommend'
 	import {ERR_OK} from '@/api/config'
 	export default{
 		components:{
 			Slider
 		},
-			data(){
+		data(){
 			return {
 				recommends:[]
 			}
 		},
 		created(){
-			this._getRecommend()
+			this._getRecommend();
+			this._getDiscList();
 		},
 		methods:{
 			_getRecommend(){
@@ -43,8 +44,15 @@
 				//因为是promise过来的 所以用then的话就能获取数据了
 				getRecommend().then((res)=>{
 					if(res.code === ERR_OK){
-						console.log(res.data.slider)
+						console.log('slider列表',res.data.slider)
 						this.recommends = res.data.slider;
+					}
+				})
+			},
+			_getDiscList(){
+				getDiscList().then((res)=>{
+					if(res.code === ERR_OK){
+						console.log(res.data.list)
 					}
 				})
 			}

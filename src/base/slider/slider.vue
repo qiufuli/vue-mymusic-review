@@ -49,6 +49,7 @@
 	    			this._play()
 	    		}
 	    	},20)
+	    	//监听浏览器视口的变化来动态改变slider的宽度
 	    	window.addEventListener('resize',()=>{
 	    		if(!this.slider){
 	    			return
@@ -59,12 +60,14 @@
 	    	})
 	    },
 	    methods:{
+	    	//给他个参数 如果没传就是undefined 为false
 	    	_setSlideWidth(isResize){
 	    		this.children = this.$refs.sliderGroup.children;
 	    		let width = 0;
 	    		let sliderWidth = this.$refs.slider.clientWidth;
 	    		for(let i=0;i<this.children.length;i++){
 	    			let child = this.children[i];
+	    			//封装class 复用
 	    			addClass(child,'slider-item');
 	    			child.style.width = sliderWidth+'px';
 	    			width += sliderWidth;
@@ -74,9 +77,6 @@
 	    			width+= 2*sliderWidth;
 	    		}
 	    		this.$refs.sliderGroup.style.width = width+'px';
-	    	},
-	    	_initDots(){
-	    		this.dots = new Array(this.children.length);
 	    	},
 	    	_initSlider(){
 	        this.slider = new BScroll(this.$refs.slider, {
@@ -94,7 +94,7 @@
 	        	let pageIndex = this.slider.getCurrentPage().pageX;
 	        	if(this.loop){
 	        		//无缝滚动的时候 index是减1的 因为前后多2个
-	        		pageIndex = pageIndex -1;
+	        		pageIndex = pageIndex - 1;
 	        	}
 	        	this.currentPageIndex= pageIndex;
 	        	if(this.autoPlay){
@@ -103,8 +103,11 @@
 	        	}
 	        })
 	    	},
+	    	_initDots(){
+	    		this.dots = new Array(this.children.length);
+	    	},
 	    	_play(){
-	    		let pageIndex = this.currentPageIndex +1;
+	    		let pageIndex = this.currentPageIndex + 1;
 	    		if(this.loop){
 	    			pageIndex = pageIndex + 1
 	    		}
@@ -113,7 +116,18 @@
 	    		},this.interval)
 	    	}
 	    },
-	    //别忘了清理
+	    activated() {
+	      if (this.autoPlay) {
+	        this._play()
+	      }
+	    },
+	    deactivated() {
+	      clearTimeout(this.timer)
+	    },
+	    beforeDestroy() {
+	      clearTimeout(this.timer)
+	    },
+	    //别忘了清理 切走的时候清除
 	    destroyed(){
 	    	clearTimeout(this.timer)
 	    }
