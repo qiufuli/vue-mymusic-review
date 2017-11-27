@@ -2,6 +2,7 @@
   <div id="app">
 		<m-header></m-header>
 		<tab></tab>
+		<!--keep-alive页面缓存-->
 		<keep-alive>
 				<router-view></router-view>
 		</keep-alive>

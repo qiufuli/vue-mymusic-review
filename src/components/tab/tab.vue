@@ -1,7 +1,7 @@
 <template>
 	<div class="tab">
 		<!-- tag 是router-link的属性 就是渲染成什么标签 正常是a标签-->
-		<router-link tag="div" class="tab-item" :class="{'router-link-active':this.$route.path === '/recommend'}"to="/recommend">
+		<router-link tag="div" class="tab-item" :class="{'router-link-active':this.$route.path === 'recommend'}" to="/recommend">
 			<span class="tab-link">推荐</span>
 		</router-link>
 		<router-link tag="div" class="tab-item" to="/singer">
@@ -19,7 +19,7 @@
 
 <script>
 	export default{
-
+		
 	}
 </script>
 

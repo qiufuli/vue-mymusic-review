@@ -1,22 +1,43 @@
 <template>
 <div class="recommend">
-	<div class="recommend-content">
-		<!--加这个if判断是为了保证dom已经加载完了 否则动态设置轮播元素宽度的时候设置不上 获取不到元素  重要-->
-		<!--if成功的时候才会渲染下面的slider组件 这样就确保有元素在 666-->
-		<div v-if="recommends.length" class="slider-wrapper" ref="sliderWrapper">
-			<slider>
-				<div v-for="item in recommends">
-					<a :href="item.linkUrl">
-						<img class="needsclick" :src="item.picUrl" alt="" />
-					</a>
-				</div>
-			</slider>
+	<!--需要把discList传入 让页面dom渲染成功 撑起div 在去初始化scroll-->
+	<scroll ref="scroll" class="recommend-content" :data="discList">
+		<!-- scroll 是父子集合 只有第一个元素会滚动 
+		你要是想让2个一起滚动的话 就需要加上一个包裹层-->
+		<div>
+			<!--加这个if判断是为了保证dom已经加载完了 否则动态设置轮播元素宽度的时候设置不上 获取不到元素  重要-->
+			<!--if成功的时候才会渲染下面的slider组件 这样就确保有元素在 666-->
+			<div v-if="recommends.length" class="slider-wrapper" ref="sliderWrapper">
+				<slider>
+					<div v-for="item in recommends">
+						<a :href="item.linkUrl">
+							<!-- needsclick 这个class 不是样式 是监听是否需要点击事件 有的话 不会拦截-->
+	        				<!--是fastclick（移动端300延迟解决方案） 和 better-scroll 冲突了 needsclick是fastclick里面的-->
+							<img  @load="loadImage" class="needsclick" :src="item.picUrl" alt="" />
+						</a>
+					</div>
+				</slider>
+			</div>
+			<div class="recommend-list">
+				<h1 class="list-title">热门歌单推荐</h1>
+				<ul>
+					<li v-for="item in discList" class="item">
+						<div class="icon">
+							<img :src="item.imgurl" width="60" height="60" alt="" />
+						</div>
+						<div class="text">
+							<!-- 如果数据中有一些html字符 我们可以用v-hml能够转义-->
+							<h2 class="name" v-html="item.creator.name"></h2>
+							<p class="desc" v-html="item.dissname"></p>
+						</div>
+					</li>
+				</ul>
+			</div>
 		</div>
-		<div class="recommend-list">
-			<h1 class="list-title">热门歌单推荐</h1>
-			<ul></ul>
+		<div class="loading-container" v-show="!discList.length">
+			<loading></loading>
 		</div>
-	</div>
+	</scroll>
 </div>
 </template>
 
@@ -24,13 +45,20 @@
 	import Slider from '@/base/slider/slider'
 	import {getRecommend,getDiscList} from '@/api/recommend'
 	import {ERR_OK} from '@/api/config'
+	//把better-scroll封装了一下
+	import Scroll from '@/base/scroll/scroll'
+	import Loading from '@/base/loading/loading'
 	export default{
 		components:{
-			Slider
+			Slider,
+			Scroll,
+			Loading
 		},
 		data(){
 			return {
-				recommends:[]
+				recommends:[],
+				//歌单列表数据
+				discList:[]
 			}
 		},
 		created(){
@@ -52,9 +80,16 @@
 			_getDiscList(){
 				getDiscList().then((res)=>{
 					if(res.code === ERR_OK){
-						console.log(res.data.list)
+						this.discList = res.data.list;
 					}
 				})
+			},
+			loadImage(){
+				// 调用一次就好 出来一张图片 就已经把高度撑开了
+				if(!this.checkLoaded){
+					this.$refs.scroll.refresh();
+					this.checkLoaded = true;
+				}
 			}
 		}
 	}

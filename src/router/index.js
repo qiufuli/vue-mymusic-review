@@ -27,7 +27,7 @@ export default new Router({
     {
   		//重定向 要不页面进来的时候没有默认效果
   		path:'/',
-  		redirect:'/Recommend'
+  		redirect:'/recommend'
   	},
   ]
 })
