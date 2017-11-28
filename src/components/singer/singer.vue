@@ -1,6 +1,6 @@
 <template>
 	<div class="singer">
-		
+		<list-view :data="singers"></list-view>
 	</div>
 </template>
 
@@ -9,10 +9,14 @@
 	import {ERR_OK} from '@/api/config'
 	// 初始化一个singer对象 
 	import Singer from '@/common/js/singer'
+	import ListView from '@/base/listview/listview'
 	const HOT_SINGER_LEN = 10	
 	const HOT_NAME = '热门'
 	
 	export default{
+		components:{
+			ListView
+		},
 		data(){
 			return {
 				singers:[]
@@ -22,15 +26,15 @@
 			this._getSingerList()
 		},
 		methods:{
+			
 			_getSingerList(){
 				getSingerList().then((res)=>{
 					if(res.code === ERR_OK){
-						this.singers = res.data.list;
-						console.log(this._normalizeSinger(this.singers))
+						this.singers = this._normalizeSinger(res.data.list);
 					}
 				})
 			},
-			//获取到数据顺序不对 给他归纳一下 这个很有用 回去整理
+			//获取到数据形势不对 给他归纳一下 这个很有用 回去整理
 			_normalizeSinger(list){
 				let map = {
 					hot:{
