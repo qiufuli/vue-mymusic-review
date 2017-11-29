@@ -6,7 +6,7 @@ import App from './App'
 import router from './router'
 import fastclick from 'fastclick'
 import  vueLazyLoad from 'vue-lazyload'
-
+import store from './store'
 import '@/common/stylus/index.styl'
 //解决移动端300ms延时的问题 固定写法
 fastclick.attach(document.body)
@@ -18,7 +18,8 @@ Vue.use(vueLazyLoad,{
 /* eslint-disable no-new */
 new Vue({
   el: '#app',
-	router,
+  router,
+  store,
   template: '<App/>',
   components: { App }
 })

@@ -1,6 +1,7 @@
 <template>
 	<div class="singer">
-		<list-view :data="singers"></list-view>
+		<list-view @select='selectSinger' :data="singers"></list-view>
+		<router-view></router-view>
 	</div>
 </template>
 
@@ -10,6 +11,8 @@
 	// 初始化一个singer对象 
 	import Singer from '@/common/js/singer'
 	import ListView from '@/base/listview/listview'
+	import {mapMutations} from'vuex'
+
 	const HOT_SINGER_LEN = 10	
 	const HOT_NAME = '热门'
 	
@@ -26,7 +29,14 @@
 			this._getSingerList()
 		},
 		methods:{
-			
+			// 接收点击传过来的数据
+			selectSinger(singer){
+				this.$router.push({
+					path:`/singer/${singer.id}`
+				})
+				// 这就实现了一次对mutation的提交
+				this.setSinger(singer)
+			},
 			_getSingerList(){
 				getSingerList().then((res)=>{
 					if(res.code === ERR_OK){
@@ -81,7 +91,12 @@
 					return a.title.charCodeAt(0) - b.title.charCodeAt(0)
 				})
 				return hot.concat(ret);
-			}
+			},
+			// 语法糖
+			...mapMutations({
+				setSinger:'SET_SINGER'
+			})
+			
 		}
 	}
 </script>

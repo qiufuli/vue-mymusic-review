@@ -4,7 +4,7 @@
             <li v-for="group in data" class="list-group" ref="listGroup">
                 <h2 class="list-group-title">{{group.title}}</h2>
                 <ul>
-                    <li v-for="item in group.items" class="list-group-item">
+                    <li @click="selectItem(item)" v-for="item in group.items" class="list-group-item">
                         <img class="avatar" v-lazy="item.avatar" alt="">
                         <span class="name">{{item.name}}</span>
                     </li>
@@ -23,20 +23,27 @@
                 </li>
             </ul>
         </div>
+        <div class="list-fixed" v-show="fixedTitle" ref="fixed">
+            <h1 class="fixed-title">{{fixedTitle}}</h1>
+        </div>
+        <div v-show="!data.length" class="loading-container">
+	      <loading></loading>
+	    </div>
     </scroll>
 </template>
 
 <script type="text/ecmascript-6">
     import Scroll from '@/base/scroll/scroll' 
     import {getData} from '@/common/js/dom'
-    
+    import Loading from '@/base/loading/loading'
     const TITLE_HEIGHT = 30
 	// a-z元素的高度 用来算位移
     const ANCHOR_HEIGHT = 18 
       
     export default {
         components:{
-            Scroll
+            Scroll,
+            Loading
         },
         props:{
             data:{
@@ -47,7 +54,8 @@
         data(){
             return {
                 scrollY:-1,
-                currentIndex:0
+                currentIndex:0,
+                diff:-1
             }
         },
         computed:{
@@ -58,6 +66,12 @@
                 return this.data.map((group)=>{
                     return group.title.substr(0,1)
                 })
+            },
+            fixedTitle(){
+                if(this.scrollY > 0){
+                    return '';
+                }
+                return this.data[this.currentIndex]? this.data[this.currentIndex].title:[];
             }
         },
         created(){
@@ -96,6 +110,15 @@
                 this.scrollY = pos.y
             },
             scrollTo(index){
+                // 点击到A-Z外部得区域了
+                if(!index && index != 0){
+                    return
+                }
+                if(index < 0){
+                    index = 0;
+                }else if(index > this.listHeight.length - 2){
+                    index = this.listHeight - 2;
+                }
                 this.scrollY = -this.listHeight[index];
               this.$refs.listview.scrollToElement(this.$refs.listGroup[index],0)
             },
@@ -111,6 +134,11 @@
                     this.listHeight.push(height)
                     
                 }
+                console.log('listHeight',this.listHeight)
+            },
+            // 怕发点击事件
+            selectItem(item){
+                this.$emit('select',item)
             }
         },
         watch:{
@@ -135,11 +163,22 @@
                     // newY 向下滚动是正值  向上滚动是负值 -newY 是正值
                     if(-newY>=height1 && -newY<height2){
                         this.currentIndex = i;
+                        // 上线 
+                        this.diff = height2 + newY;
+                        // console.log('diff',this.diff)
                         return 
                     }
                     // 滚动到底部 并且-newY大于最后一个元素的上线
                     this.currentIndex = listHeight.length - 2;
                 }
+            },
+            diff(newVal){
+                let fixedTop = (newVal>0 && newVal<TITLE_HEIGHT) ? newVal - TITLE_HEIGHT : 0; 
+                if(this.fixedTop === fixedTop){
+                    return
+                }
+                this.fixedTop = fixedTop;
+                this.$refs.fixed.style.transform=`translate3d(0,${fixedTop}px,0)`
             }
         }
     }

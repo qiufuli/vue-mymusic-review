@@ -45,6 +45,8 @@
 				// 是否派发滚动事件
 
 				if(this.listenScroll){
+					// 直接写this指向的是Better-scroll
+					// 我们要保持vue的this 所以用也变量代替
 					let me = this;
 					this.scroll.on('scroll',(pos)=>{
 						me.$emit('scroll',pos);
