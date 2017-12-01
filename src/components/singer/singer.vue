@@ -34,7 +34,7 @@
 				this.$router.push({
 					path:`/singer/${singer.id}`
 				})
-				// 这就实现了一次对mutation的提交
+				// 这就实现了一次对mutation的提交 吧singer存到这里了
 				this.setSinger(singer)
 			},
 			_getSingerList(){

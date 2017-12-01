@@ -20,6 +20,7 @@
 			}
 		},
 		computed:{
+			// 从状态管理器中拿值
 			...mapGetters([
 				'singer'
 			]),

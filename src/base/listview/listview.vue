@@ -136,7 +136,7 @@
                 }
                 console.log('listHeight',this.listHeight)
             },
-            // 怕发点击事件
+            // 怕发点击事件给 singer 基础组件一般执行的是派发过程
             selectItem(item){
                 this.$emit('select',item)
             }

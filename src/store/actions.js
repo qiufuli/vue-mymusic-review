@@ -7,6 +7,8 @@ function findIndex(list,song){
 		return item.id === song.id
 	})
 }
+// {commit,state}参数解构的形式写的  这个正常是传一个context参数 里面有
+// commit 和state这些方法
 export const selectPlay = function({commit,state},{list,index}){
 	commit(types.SET_SEQUENCE_LIST,list);
 	if(state.mode === playMode.random){
