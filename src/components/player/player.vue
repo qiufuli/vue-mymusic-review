@@ -2,17 +2,24 @@
 <!-- 播放器当playlist有值得时候显示 -->
 <div class="player" v-show="playlist.length > 0">
   <!-- 全屏的播放器 fullScreen有值得时候显示 反之让mini播放器显示-->
+  <!-- vue 提供的js钩子 动画 enter-afterenter-leave-leaveenter -->
+  <transition name="normal" 
+    @enter="enter"
+    @after-enter="afterEnter"
+    @leave="leave"
+    @after-leave="afterLeave"
+  >
     <div class="normal-player" v-show="fullScreen">
-      
         <div class="background">
 					<img width="100%" height="100%" :src="currentSong.image" alt="" />
 				</div>
         <div class="top">
-					<div class="back" >
+        
+					<div class="back" @click="back">
 						<i class="icon-back"></i>
 					</div>
-					<h1 class="title" ></h1>
-					<h2 class="subtitle" ></h2>
+					<h1 class="title" v-html="currentSong.name"></h1>
+					<h2 class="subtitle" v-html="currentSong.singer"></h2>
 				</div>
 				<div class="middle" >
 					<div class="middle-l" ref="middleL">
@@ -50,7 +57,7 @@
 							<i  class="icon-prev"></i>
 						</div>
 						<div class="icon i-center" >
-							<i ></i>
+							<i @click="togglePlaying" class="icon-play"></i>
 						</div>
 						<!--上一曲 下一曲  主要是改变currentIndex的索引-->
 						<div class="icon i-right" >
@@ -62,13 +69,15 @@
 					</div>
 				</div>
     </div>
-    <div class="mini-player" v-show="!fullScreen">
+  </transition>
+  <transition name="mini">
+    <div class="mini-player" v-show="!fullScreen" @click="open">
       <div class="icon">
         <img width="40" height="40" :src="currentSong.image" alt="">
       </div>
       <div class="text">
-        <h2 class="name"></h2>
-        <p class="desc"></p>
+        <h2 class="name" v-html="currentSong.name"></h2>
+        <p class="desc" v-html="currentSong.singer"></p>
       </div>
       <div class="control">
 
@@ -77,19 +86,119 @@
         <i class="icon-playlist"></i>
       </div>
     </div>
+  </transition>
+  <audio ref="audio" :src="currentSong.url"></audio>
 </div>
   
 </template>
 
 <script>
 import {mapGetters} from 'vuex'
+import {mapMutations} from 'vuex'
+import animations from 'create-keyframe-animation'
+import {prefixStyle} from '@/common/js/dom'
+
+	const transform = prefixStyle('transform')
 export default {
   computed:{
       ...mapGetters([
-          'fullScreen',
-          'playlist',
-          'currentSong'
+          'fullScreen',//全屏
+          'playlist',//播放列表
+          'currentSong',//当前歌曲信息
+          'currentIndex',//当前歌曲索引
+          'playing'//播放和暂停
       ])
+  },
+  mounted(){
+  },
+  methods:{
+    back(){
+     this.setFullScreen(false);
+    },
+    open(){
+      this.setFullScreen(true);
+    },
+    // 有两个参数 第一个就是dom元素，第二个是done一个回调函数 
+    //执行的时候直接跳到下一个钩子 afterEnter
+    //  动画 start
+    enter(el,done){
+      const {x,y,scale} = this._getPosAndScale();
+      let animation = {
+        0:{
+          transform:`translate3d(${x}px,${y}px,0) scale(${scale})`
+        },
+        60:{
+          transform:`translate3d(0,0,0) scale(1.1)`
+        },
+        100:{
+          transform:`translate3d(0,0,0) scale(1)`
+        }
+      }
+      animations.registerAnimation({
+        name:'move',
+        animation,
+        presets:{
+          duration:400,
+          easing:'linear'
+        }
+      })
+      animations.runAnimation(this.$refs.cdWrapper,'move',done);
+    },
+    afterEnter(){
+      animations.unregisterAnimation('move');
+      this.$refs.cdWrapper.style.animation = '';
+    },
+    leave(el,done){
+      this.$refs.cdWrapper.style.transition = 'all 0.4s';
+      const {x,y,scale} = this._getPosAndScale();
+      this.$refs.cdWrapper.style[transform] = `translate3d(${x}px,${y}px,0) scale(${scale})`;
+      this.$refs.cdWrapper.addEventListener('transitionend',done);
+    },
+    afterLeave(){
+      this.$refs.cdWrapper.style.transition = '';
+      this.$refs.cdWrapper.style[transform] = '';
+
+    },
+    _getPosAndScale(){
+      const targetWidth = 40;// mini图标的宽度是40px
+      const padddingLeft = 40;// mini图标距离左边的长度是40px
+      const paddingBottom = 30; //mini图标距离底边的长度是30px
+      // *********************************
+      const paddingTop = 80; // normal图标距离顶部的宽度是80px
+      const width = window.innerWidth * 0.8; //normal图标的宽度设的是80%
+      const scale = targetWidth / width;//初始的缩放比例 就能算出来了
+      // *********************************
+      const x = -(window.innerWidth / 2 - padddingLeft); 
+      const y = window.innerHeight - paddingTop - width/2 - paddingBottom;
+      return {
+        x,
+        y,
+        scale
+      }
+    },
+    //  动画 end
+    ...mapMutations({
+      setFullScreen:'SET_FULL_SCREEN',
+      setPlayingState:'SET_PLAYING_STATE'
+    }),
+    //播放暂停
+    togglePlaying(){
+      this.setPlayingState(!this.playing);
+
+    }
+  },
+  watch:{
+    currentSong(){
+      this.$nextTick(()=>{
+        this.$refs.audio.play();
+      })
+    },
+    playing(newPlaying){
+      const audio = this.$refs.audio;
+      this.$nextTick(()=>{
+        newPlaying? audio.play() : audio.pause();
+      })
+    }
   }
 }
 </script>

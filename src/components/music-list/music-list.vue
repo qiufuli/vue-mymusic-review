@@ -87,9 +87,10 @@ export default{
     // 接收song-list组件传递过来的值
     selectItem(item,index){
       // item和index 拿的是单曲的信息和位置 传过去的应该是总的songs
+
       this.selectPlay({
         list:this.songs,
-        index:item
+        index:index
       })
     },
     ...mapActions([
