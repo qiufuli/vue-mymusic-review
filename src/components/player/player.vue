@@ -44,14 +44,14 @@
 				  	<div class="progress-wrapper">
 			            <span class="time time-l">{{format(currentTime)}}</span>
 			            <div class="progress-bar-wrapper">
-                      <progress-bar :percent="percent"></progress-bar>
+                      <progress-bar :percent="percent" @percentChange="onProgressBarChange"></progress-bar>
 			            </div>
 			            <span class="time time-r">{{format(currentSong.duration)}}</span>
 		          	</div>
 					<div class="operators">
-						<div class="icon i-left">
+						<div class="icon i-left" @click="changeMode">
 							<!--播放模式-->
-							<i ></i>
+							<i :class="iconMode"></i>
 						</div>
 						<div class="icon i-left" :class="disableCls" >
 							<i  @click="prev" class="icon-prev"></i>
@@ -80,7 +80,10 @@
         <p class="desc" v-html="currentSong.singer"></p>
       </div>
       <div class="control" >
-        <i :class="minIcon" @click.stop="togglePlaying"></i>
+        <progress-circle :radius="radius" :percent="percent"> 
+          <i :class="minIcon" class="icon-mini" @click.stop="togglePlaying"></i>
+        </progress-circle> 
+        
       </div>
       <div class="control">
         <i class="icon-playlist"></i>
@@ -102,17 +105,21 @@ import {mapMutations} from 'vuex'
 import animations from 'create-keyframe-animation'
 import {prefixStyle} from '@/common/js/dom'
 import ProgressBar from '@/base/progress-bar/progress-bar'
+import ProgressCircle from '@/base/progress-circle/progress-circle'
+import {playMode} from '@/common/js/config'
 
 	const transform = prefixStyle('transform')
 export default {
   data(){
     return {
       songReady:false,
-      currentTime:0
+      currentTime:0,
+      radius:32 //直接写数据的话可能会被转化成字符串
     }
   },
   components:{
-    ProgressBar
+    ProgressBar,
+    ProgressCircle
   },
   computed:{
       ...mapGetters([
@@ -121,6 +128,8 @@ export default {
           'currentSong',//当前歌曲信息
           'currentIndex',//当前歌曲索引
           'playing',//播放和暂停
+          'mode',
+          'sequenceList'
       ]),
       playIcon(){
         return this.playing ? 'icon-pause' : 'icon-play';
@@ -136,6 +145,9 @@ export default {
       },
       percent(){
         return this.currentTime / this.currentSong.duration
+      },
+      iconMode(){
+        return this.mode === playMode.sequence ? 'icon-sequence' : this.mode === playMode.loop ? 'icon-loop' : 'icon-random'
       }
   },
   mounted(){
@@ -210,7 +222,8 @@ export default {
     ...mapMutations({
       setFullScreen:'SET_FULL_SCREEN',
       setPlayingState:'SET_PLAYING_STATE',
-      setCurrentIndex:'SET_CURRENT_INDEX'
+      setCurrentIndex:'SET_CURRENT_INDEX',
+      setPlayMode:'SET_PLAY_MODE'
     }),
     //播放暂停
     togglePlaying(){
@@ -272,6 +285,24 @@ export default {
         len++
       }
       return num;
+    },
+    // 
+    onProgressBarChange(precent){
+      this.$refs.audio.currentTime = this.currentSong.duration*precent;
+      if(!this.playing){
+        this.togglePlaying();
+      }
+    },
+    // 播放模式
+    changeMode(){
+      // 总共有3种状态 对3取余数
+      const mode = (this.mode + 1) % 3;
+      this.setPlayMode(mode);
+      let list = null;
+      // 随机列表功能
+      if(mode === playMode.random){
+
+      }
     }
   },
   watch:{

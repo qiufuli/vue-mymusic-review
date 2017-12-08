@@ -1,8 +1,12 @@
 <template>
-  <div class="progress-bar" ref="progressBar" >
+  <div class="progress-bar" ref="progressBar" @click="progressClick" >
     <div class="bar-inner">
       <div class="progress" ref="progress"></div>
-      <div class="progress-btn-wrapper" ref="progressBtn">
+      <div class="progress-btn-wrapper" ref="progressBtn"
+        @touchstart.prevent="progressTouchStart"
+        @touchmove.prevent="progressTouchMove"
+        @touchend="progressTouchEnd"
+      >
         <div class="progress-btn"></div>
       </div>
     </div>
@@ -22,14 +26,55 @@ export default{
 	},
 	watch:{
 		percent(newPercent){
-			if(newPercent >= 0){
+			if(newPercent >= 0 && !this.touch.initiated){
+        // 整个的width 减去小球的宽度
 				const barWidth = this.$refs.progressBar.clientWidth - progressBtnWidth ;
-				const offsetWidth = newPercent * barWidth;
-				this.$refs.progress.style.width = `${offsetWidth}px`
-				this.$refs.progressBtn.style[transform] = `translate3d(${offsetWidth}px,0,0)`
+        // 算出了偏移量
+        const offsetWidth = newPercent * barWidth;
+				this._offset(offsetWidth);
 			}
 		}
-	}
+	},
+  created(){
+    this.touch = {}
+  },
+  methods:{
+    _offset(offsetWidth){
+        this.$refs.progress.style.width = `${offsetWidth}px`
+				this.$refs.progressBtn.style[transform] = `translate3d(${offsetWidth}px,0,0)`
+    },
+    progressTouchStart(e){
+      this.touch.initiated = true;
+      // 获取触摸的第一个点的X偏移量
+      this.touch.startX = e.touches[0].pageX;
+      //获取走了多少的进度
+      this.touch.left = this.$refs.progress.clientWidth;
+    },
+    progressTouchMove(e){
+       if(!this.touch.initiated){
+         return
+       }
+       const deltaX = e.touches[0].pageX - this.touch.startX;
+      //  最大不能超过barwidth的宽度 最小不能小过0
+       const offsetWidth =Math.min(this.$refs.progressBar.clientWidth - progressBtnWidth, Math.max(0,this.touch.left+deltaX));
+      	this._offset(offsetWidth);
+    },
+    progressTouchEnd(e){
+      this.touch.initiated = false;
+      // 告诉外层我拖动了多少
+      this._triggerPercent();
+    },
+    _triggerPercent(){
+      	const barWidth = this.$refs.progressBar.clientWidth - progressBtnWidth ;
+        const percent = this.$refs.progress.clientWidth / barWidth;
+        this.$emit('percentChange',percent);
+    },
+    // 点击改变进度条
+    progressClick(e){
+      this._offset(e.offsetX);
+       this._triggerPercent();
+    }
+  }
 }
 </script>
 
