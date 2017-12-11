@@ -94,6 +94,7 @@
   @canplay="ready"
   @error="error"
   @timeupdate="updateTime"
+  @ended="end"
   ></audio>
 </div>
   
@@ -107,7 +108,7 @@ import {prefixStyle} from '@/common/js/dom'
 import ProgressBar from '@/base/progress-bar/progress-bar'
 import ProgressCircle from '@/base/progress-circle/progress-circle'
 import {playMode} from '@/common/js/config'
-
+import {shuffle} from '@/common/js/util'
 	const transform = prefixStyle('transform')
 export default {
   data(){
@@ -150,9 +151,17 @@ export default {
         return this.mode === playMode.sequence ? 'icon-sequence' : this.mode === playMode.loop ? 'icon-loop' : 'icon-random'
       }
   },
-  mounted(){
+  created(){
+    console.log(this.sequenceList)
   },
   methods:{
+    ...mapMutations({
+      setFullScreen:'SET_FULL_SCREEN',
+      setPlayingState:'SET_PLAYING_STATE',
+      setCurrentIndex:'SET_CURRENT_INDEX',
+      setPlayMode:'SET_PLAY_MODE',
+      setPlayList:'SET_PLAYLIST'
+    }),
     // 打开大小窗口
     back(){
      this.setFullScreen(false);
@@ -219,15 +228,22 @@ export default {
       }
     },
     //  动画 end
-    ...mapMutations({
-      setFullScreen:'SET_FULL_SCREEN',
-      setPlayingState:'SET_PLAYING_STATE',
-      setCurrentIndex:'SET_CURRENT_INDEX',
-      setPlayMode:'SET_PLAY_MODE'
-    }),
+
     //播放暂停
     togglePlaying(){
       this.setPlayingState(!this.playing); //true
+    },
+    end(){
+      if(this.mode === playMode.loop){
+        this.loop()
+      }else{
+       this.next()
+      }
+    },
+    loop(){
+      //这就是简单单曲循环 把时间变成0 
+      this.$refs.audio.currentTime = 0;
+      this.$refs.audio.play();
     },
     next(){
       // 保证了快速点击的时候歌曲还能够正常播放
@@ -301,14 +317,37 @@ export default {
       let list = null;
       // 随机列表功能
       if(mode === playMode.random){
-
+          list = shuffle(this.sequenceList)
+      }else{
+        // 顺序播放和循环播放的时候列表的循序是不用变得
+        list = this.sequenceList;
       }
+      console.log(this.sequenceList)
+      this.resetCurrentIndex(list);
+      this.setPlayList(list);
+
+    },
+    resetCurrentIndex(list){
+      // findIndex()返回一个索引
+
+      let index = list.findIndex((item)=>{
+					return item.id === this.currentSong.id;
+				})
+      this.setCurrentIndex(index);
+       console.log(this.currentIndex)
     }
   },
   watch:{
-    currentSong(){
+    // 切换模式的时候 当前歌曲是变了 变了还是现在这个
+    // 这个还是会触发的 所以暂停的时候切换模式会触发这个然后音乐就会播放了
+
+    currentSong(newSong,oldSong){
+      if(newSong.id === oldSong.id){
+        return
+      }
       this.$nextTick(()=>{
         this.$refs.audio.play();
+        this.currentSong.getLyric();
       })
     },
     playing(newPlaying){

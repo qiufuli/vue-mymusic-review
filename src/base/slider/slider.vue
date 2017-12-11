@@ -15,7 +15,7 @@
 <script>
 	import {addClass} from 'common/js/dom'
 	import BScroll from 'better-scroll'
-	export default{
+	export default{ 
 		data(){
 			return {
 				dots:[],
@@ -25,7 +25,7 @@
 	    props: {
 	      loop: {
 	        type: Boolean,
-	        default: true
+	        default: false
 	      },
 	      autoPlay: {
 	        type: Boolean,

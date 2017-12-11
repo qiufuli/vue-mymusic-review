@@ -41,6 +41,7 @@
 				// 如果你在detail页面刷新是获取不到数据的 我们让他回退到父页面上
 				if(!this.singer.id){
 					this.$router.push('/singer')
+					return
 				}
 				getSingerDetail(this.singer.id).then((res)=>{
 					if(res.code === ERR_OK){
